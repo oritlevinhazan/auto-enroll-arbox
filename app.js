@@ -11,26 +11,32 @@ const getMillisUntil = (timeStr) => {
     const israelTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
     const target = new Date(israelTime);
     target.setHours(hours, minutes, seconds, 0);
+    // if the time has already passed today, schedule for tomorrow
+    if (target <= israelTime) target.setDate(target.getDate() + 1);
     return target - israelTime;
 };
 
 const REGISTER_TIME = process.env.REGISTER_TIME || "16:00:10";
-const PREPARE_SECONDS = 30;
+const PREPARE_SECONDS = 300;
 
 const ms = getMillisUntil(REGISTER_TIME) - PREPARE_SECONDS * 1000;
 
-console.log(`Waiting ${Math.round(ms / 1000)} seconds to prepare jobs...`);
-await wait(ms);
+if (ms > 0) {
+    console.log(`Waiting ${Math.round(ms / 1000)} seconds to prepare jobs...`);
+    await wait(ms);
+}
 
 console.log("Preparing jobs...");
 await createEnrollmentJobs();
 
 const msToRegister = getMillisUntil(REGISTER_TIME);
-console.log(`Waiting ${Math.round(msToRegister / 1000)} seconds to enroll...`);
-await wait(msToRegister);
+if (msToRegister > 60 * 1000) {
+    console.log(`Waiting ${Math.round(msToRegister / 1000)} seconds to enroll...`);
+    await wait(msToRegister);
+}
 
 console.log("Enrolling...");
-await envokeJobs(true);
+await envokeJobs(false);
 
 console.log("Done!");
 process.exit(0);
