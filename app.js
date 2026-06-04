@@ -1,16 +1,17 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { loginArbox, createEnrollmentJobs, envokeJobs } from "./lib/arbox.js";
+import { createEnrollmentJobs, envokeJobs } from "./lib/arbox.js";
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const getMillisUntil = (timeStr) => {
     const [hours, minutes, seconds] = timeStr.split(":").map(Number);
     const now = new Date();
-    const target = new Date();
+    const israelTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
+    const target = new Date(israelTime);
     target.setHours(hours, minutes, seconds, 0);
-    return target - now;
+    return target - israelTime;
 };
 
 const REGISTER_TIME = process.env.REGISTER_TIME || "16:00:10";
@@ -29,7 +30,7 @@ console.log(`Waiting ${Math.round(msToRegister / 1000)} seconds to enroll...`);
 await wait(msToRegister);
 
 console.log("Enrolling...");
-await envokeJobs();
+await envokeJobs(true);
 
 console.log("Done!");
 process.exit(0);
