@@ -2,8 +2,8 @@ name: Auto Enroll Arbox
 
 on:
   schedule:
-    - cron: '45 13 * * 4'  # כל חמישי ב-15:45 שעון ישראל
-  workflow_dispatch:       # אפשרות הרצה ידנית
+    - cron: '0 13 * * 4'  # Every Thursday at 13:00 UTC = 16:00 Israel time
+  workflow_dispatch:       # Manual trigger option
 
 jobs:
   enroll:
@@ -23,4 +23,5 @@ jobs:
         env:
           ARBOX_USER_EMAIL: ${{ secrets.ARBOX_USER_EMAIL }}
           ARBOX_USER_PASSWORD: ${{ secrets.ARBOX_USER_PASSWORD }}
+          REGISTER_TIME: "16:00:10"
         run: node app.js
