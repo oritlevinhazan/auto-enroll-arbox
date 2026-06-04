@@ -1,56 +1,35 @@
-import express from "express";
 import dotenv from "dotenv";
-
-import { scheduler } from "./lib/arbox.js";
-
-const app = express();
 dotenv.config();
 
-app.use(express.json());
+import { loginArbox, createEnrollmentJobs, envokeJobs } from "./lib/arbox.js";
 
-// Setting CORS Headers to every response of the server
-app.use((req, res, next) => {
-	res.setHeader(
-		"Access-Control-Allow-Origin","*"
-	); // * => this is the domain
-	res.setHeader(
-		"Access-Control-Allow-Headers",
-		"Origin, X-Requested-With, Content-Type, Accept, Authorization"
-	);
-	res.setHeader(
-		"Access-Control-Allow-Methods",
-		"GET, POST, PATCH, DELETE, OPTIONS"
-	);
-	next();
-});
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Initiate Arbox scheduler
-await scheduler(); 
+const getMillisUntil = (timeStr) => {
+    const [hours, minutes, seconds] = timeStr.split(":").map(Number);
+    const now = new Date();
+    const target = new Date();
+    target.setHours(hours, minutes, seconds, 0);
+    return target - now;
+};
 
-app.get("/", async (req, res, next) => {
-	console.log("Health check 🩸🧬");
-	
-	const healthcheck = {
-		uptime: process.uptime(),
-		message: "OK",
-		timestamp: Date.now(),
-	};
-	try {
-		console.log(healthcheck);
-		res.status(200).send(healthcheck);
-	} catch (error) {
-		healthcheck.message = error;
-		res.status(503).send();
-	}
-});
+const REGISTER_TIME = process.env.REGISTER_TIME || "16:00:10";
+const PREPARE_SECONDS = 30;
 
-app.use((error, req, res, next) => {
-	if (res.headerSent) {
-		return next(error);
-	}
-	res.status(error.code || 500);
-	res.json({ message: error.message || "An unknown error occured!" });
-});
+const ms = getMillisUntil(REGISTER_TIME) - PREPARE_SECONDS * 1000;
 
-// listen to requests
-app.listen(5000);
+console.log(`Waiting ${Math.round(ms / 1000)} seconds to prepare jobs...`);
+await wait(ms);
+
+console.log("Preparing jobs...");
+await createEnrollmentJobs();
+
+const msToRegister = getMillisUntil(REGISTER_TIME);
+console.log(`Waiting ${Math.round(msToRegister / 1000)} seconds to enroll...`);
+await wait(msToRegister);
+
+console.log("Enrolling...");
+await envokeJobs();
+
+console.log("Done!");
+process.exit(0);
