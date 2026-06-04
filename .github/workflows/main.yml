@@ -2,7 +2,7 @@ name: Auto Enroll Arbox
 
 on:
   schedule:
-    - cron: '0 14 * * 4'  # כל חמישי ב-16:00 שעון ישראל
+    - cron: '45 13 * * 4'  # כל חמישי ב-15:45 שעון ישראל
   workflow_dispatch:       # אפשרות הרצה ידנית
 
 jobs:
