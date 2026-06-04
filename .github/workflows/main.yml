@@ -23,5 +23,5 @@ jobs:
         env:
           ARBOX_USER_EMAIL: ${{ secrets.ARBOX_USER_EMAIL }}
           ARBOX_USER_PASSWORD: ${{ secrets.ARBOX_USER_PASSWORD }}
-          REGISTER_TIME: "16:00:10"
+          REGISTER_TIME: "20:43:00"
         run: node app.js
