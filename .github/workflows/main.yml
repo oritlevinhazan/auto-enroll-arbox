@@ -1,0 +1,26 @@
+name: Auto Enroll Arbox
+
+on:
+  schedule:
+    - cron: '0 14 * * 4'  # כל חמישי ב-16:00 שעון ישראל
+  workflow_dispatch:       # אפשרות הרצה ידנית
+
+jobs:
+  enroll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run enrollment
+        env:
+          ARBOX_USER_EMAIL: ${{ secrets.ARBOX_USER_EMAIL }}
+          ARBOX_USER_PASSWORD: ${{ secrets.ARBOX_USER_PASSWORD }}
+        run: node app.js
