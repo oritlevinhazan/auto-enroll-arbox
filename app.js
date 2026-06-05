@@ -17,7 +17,7 @@ const getMillisUntil = (timeStr) => {
 };
 
 const REGISTER_TIME = process.env.REGISTER_TIME || "16:00:10";
-const PREPARE_SECONDS = 300;
+const PREPARE_SECONDS = 0;
 
 const ms = getMillisUntil(REGISTER_TIME) - PREPARE_SECONDS * 1000;
 

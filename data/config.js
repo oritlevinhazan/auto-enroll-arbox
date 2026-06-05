@@ -7,7 +7,7 @@ export default {
     password: process.env.ARBOX_USER_PASSWORD
   },
   alertzyAccountKey: process.env.ALERTZY_ACCOUNT_KEY,
-  registerTime: "07:00:00",
+  registerTime: "06:58:00",
   remindersTime: "10:00:00",
   maxClassesPerMonth: 9,
   // Your preffered coaches by priority on ascending order. 
