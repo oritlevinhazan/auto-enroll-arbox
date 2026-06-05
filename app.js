@@ -12,7 +12,13 @@ const getMillisUntil = (timeStr) => {
     const target = new Date(israelTime);
     target.setHours(hours, minutes, seconds, 0);
     // if the time has already passed today, schedule for tomorrow
-    if (target <= israelTime) target.setDate(target.getDate() + 1);
+    // unless we're less than 10 minutes late (e.g. workflow startup delay)
+    if (target <= israelTime) {
+        if (israelTime - target < 10 * 60 * 1000) {
+            return 0;
+        }
+        target.setDate(target.getDate() + 1);
+    }
     return target - israelTime;
 };
 
