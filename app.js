@@ -23,22 +23,26 @@ const getMillisUntil = (timeStr) => {
 };
 
 const REGISTER_TIME = process.env.REGISTER_TIME || "16:00:10";
-const PREPARE_SECONDS = 0;
+const PREPARE_SECONDS = 300;
+const SKIP_WAIT = process.env.SKIP_WAIT === "true";
 
-const ms = getMillisUntil(REGISTER_TIME) - PREPARE_SECONDS * 1000;
-
-if (ms > 0) {
-    console.log(`Waiting ${Math.round(ms / 1000)} seconds to prepare jobs...`);
-    await wait(ms);
+if (!SKIP_WAIT) {
+    const ms = getMillisUntil(REGISTER_TIME) - PREPARE_SECONDS * 1000;
+    if (ms > 0) {
+        console.log(`Waiting ${Math.round(ms / 1000)} seconds to prepare jobs...`);
+        await wait(ms);
+    }
 }
 
 console.log("Preparing jobs...");
 await createEnrollmentJobs();
 
-const msToRegister = getMillisUntil(REGISTER_TIME);
-if (msToRegister > 60 * 1000) {
-    console.log(`Waiting ${Math.round(msToRegister / 1000)} seconds to enroll...`);
-    await wait(msToRegister);
+if (!SKIP_WAIT) {
+    const msToRegister = getMillisUntil(REGISTER_TIME);
+    if (msToRegister > 60 * 1000) {
+        console.log(`Waiting ${Math.round(msToRegister / 1000)} seconds to enroll...`);
+        await wait(msToRegister);
+    }
 }
 
 console.log("Enrolling...");

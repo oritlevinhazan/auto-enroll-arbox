@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '55 12 * * 4'  # Every Thursday at 12:55 UTC = 15:55 Israel time (5 min before enrollment)
   workflow_dispatch:       # Manual trigger option
+    inputs:
+      skip_wait:
+        description: 'Skip waiting (for testing)'
+        required: false
+        default: 'false'
 
 jobs:
   enroll:
@@ -23,4 +28,5 @@ jobs:
         env:
           ARBOX_USER_EMAIL: ${{ secrets.ARBOX_USER_EMAIL }}
           ARBOX_USER_PASSWORD: ${{ secrets.ARBOX_USER_PASSWORD }}
+          SKIP_WAIT: ${{ github.event.inputs.skip_wait || 'false' }}
         run: node app.js
