@@ -1,9 +1,7 @@
 name: Auto Enroll Arbox
 
 on:
-  schedule:
-    - cron: '55 12 * * 4'  # Every Thursday at 12:55 UTC = 15:55 Israel time (5 min before enrollment)
-  workflow_dispatch:       # Manual trigger option
+  workflow_dispatch:       # Triggered by cron-job.org every Thursday at 12:55 UTC (15:55 Israel time)
     inputs:
       skip_wait:
         description: 'Skip waiting (for testing)'
