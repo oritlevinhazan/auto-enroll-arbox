@@ -2,6 +2,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { createEnrollmentJobs, envokeJobs } from "./lib/arbox.js";
+import { sendPushNotification } from "./lib/push-notification.js";
+import config from "./data/config.js";
+
+const { alertzyAccountKey } = config;
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -23,6 +27,7 @@ const getMillisUntil = (timeStr) => {
 };
 
 const REGISTER_TIME = process.env.REGISTER_TIME || "16:00:10";
+const RETRY_TIMES = ["16:02:00", "16:05:00"];
 const PREPARE_SECONDS = 300;
 const SKIP_WAIT = process.env.SKIP_WAIT === "true";
 
@@ -35,7 +40,7 @@ if (!SKIP_WAIT) {
 }
 
 console.log("Preparing jobs...");
-await createEnrollmentJobs();
+let missingDays = await createEnrollmentJobs();
 
 if (!SKIP_WAIT) {
     const msToRegister = getMillisUntil(REGISTER_TIME);
@@ -47,6 +52,36 @@ if (!SKIP_WAIT) {
 
 console.log("Enrolling...");
 await envokeJobs(false);
+
+// Retry for days where no classes were found
+for (let i = 0; i < RETRY_TIMES.length; i++) {
+    if (missingDays.length === 0) break;
+
+    const retryTime = RETRY_TIMES[i];
+    const nextRetryTime = RETRY_TIMES[i + 1];
+    const dayNames = { 0: "ראשון", 2: "שלישי", 4: "חמישי" };
+    const missingDayNames = missingDays.map(d => dayNames[d] || d).join(", ");
+
+    const retryMsg = nextRetryTime
+        ? `לא נמצאו שיעורים לימים: ${missingDayNames}\nמנסה שוב ב-${nextRetryTime.substring(0, 5)}...`
+        : `לא נמצאו שיעורים לימים: ${missingDayNames}\nניסיון אחרון...`;
+
+    if (alertzyAccountKey) {
+        await sendPushNotification(alertzyAccountKey, "⏳ מנסה שוב...", retryMsg);
+    }
+
+    if (!SKIP_WAIT) {
+        const msToRetry = getMillisUntil(retryTime);
+        if (msToRetry > 0) {
+            console.log(`Waiting ${Math.round(msToRetry / 1000)} seconds to retry for days: ${missingDayNames}...`);
+            await wait(msToRetry);
+        }
+    }
+
+    console.log(`Retrying for days: ${missingDayNames}...`);
+    missingDays = await createEnrollmentJobs(missingDays);
+    await envokeJobs(false);
+}
 
 console.log("Done!");
 process.exit(0);
