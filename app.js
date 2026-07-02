@@ -64,7 +64,7 @@ for (let i = 0; i < RETRY_TIMES.length; i++) {
 
     const retryMsg = nextRetryTime
         ? `לא נמצאו שיעורים לימים: ${missingDayNames}\nמנסה שוב ב-${nextRetryTime.substring(0, 5)}...`
-        : `לא נמצאו שיעורים לימים: ${missingDayNames}\nניסיון אחרון...`;
+        : `לא נמצאו שיעורים לימים: ${missingDayNames}\nניסיון אחרון - אם לא יצליח, הירשמי ידנית!`;
 
     if (alertzyAccountKey) {
         await sendPushNotification(alertzyAccountKey, "⏳ מנסה שוב...", retryMsg);
@@ -81,6 +81,14 @@ for (let i = 0; i < RETRY_TIMES.length; i++) {
     console.log(`Retrying for days: ${missingDayNames}...`);
     missingDays = await createEnrollmentJobs(missingDays);
     await envokeJobs(false);
+}
+
+if (missingDays.length > 0) {
+    const dayNames = { 0: "ראשון", 2: "שלישי", 4: "חמישי" };
+    const missingDayNames = missingDays.map(d => dayNames[d] || d).join(", ");
+    if (alertzyAccountKey) {
+        await sendPushNotification(alertzyAccountKey, "❌ הרישום נכשל", `לא נמצאו שיעורים לימים: ${missingDayNames}\nהירשמי ידנית!`);
+    }
 }
 
 console.log("Done!");
